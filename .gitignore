@@ -1,0 +1,9 @@
+config.js
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+node_modules/

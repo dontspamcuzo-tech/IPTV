@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Player</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" async></script>
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div id="sidebar-header">
+        <h1>IPTV Player</h1>
+        <button id="load-btn" title="Load Playlist">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="search-bar">
+        <input type="text" id="search-input" placeholder="Search channels..." autocomplete="off">
+      </div>
+
+      <div id="category-filter">
+        <select id="category-select">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+
+      <div id="channel-list"></div>
+
+      <div id="sidebar-footer">
+        <span id="channel-count">0 channels</span>
+        <button id="favorites-toggle" title="Show Favorites">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Favorites
+        </button>
+      </div>
+    </aside>
+
+    <main id="content">
+      <div id="player-container">
+        <video id="video-player" controls autoplay></video>
+        <div id="player-overlay" class="visible">
+          <div id="overlay-content">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <p>Load a playlist to get started</p>
+            <button id="overlay-load-btn">Load M3U Playlist</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="now-playing">
+        <div id="now-playing-info">
+          <span id="now-playing-name">No channel selected</span>
+          <span id="now-playing-category"></span>
+        </div>
+        <div id="now-playing-actions">
+          <button id="fav-btn" title="Add to Favorites">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </button>
+          <button id="airplay-btn" title="AirPlay" style="display:none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/>
+              <polygon points="12 15 17 21 7 21 12 15"/>
+            </svg>
+          </button>
+          <button id="cast-btn" title="Cast to Chromecast" style="display:none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/>
+              <line x1="2" y1="20" x2="2.01" y2="20"/>
+            </svg>
+          </button>
+          <button id="pip-btn" title="Picture-in-Picture">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <rect x="11" y="9" width="9" height="6" rx="1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Load playlist modal -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+      <h2>Load Playlist</h2>
+      <div id="modal-tabs">
+        <button class="modal-tab active" data-tab="url">From URL</button>
+        <button class="modal-tab" data-tab="file">From File</button>
+      </div>
+      <div id="tab-url" class="tab-content active">
+        <input type="text" id="playlist-url" placeholder="Enter M3U playlist URL...">
+        <button id="load-url-btn">Load</button>
+      </div>
+      <div id="tab-file" class="tab-content">
+        <label id="file-drop-zone" for="playlist-file">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span>Drop an M3U file here or click to browse</span>
+          <input type="file" id="playlist-file" accept=".m3u,.m3u8" hidden>
+        </label>
+      </div>
+      <button id="modal-close">Cancel</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/favorites.js"></script>
+  <script src="js/cast.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
