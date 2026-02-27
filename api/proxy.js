@@ -11,14 +11,14 @@ export default async function handler(req, res) {
   }
 
   const targetUrl = req.query.url
-  console.log(`Proxy hit: url=${targetUrl || '(none)'} referer=${req.headers.referer || '(none)'}`)
   if (!targetUrl) {
     res.status(400).json({ error: 'Missing ?url= parameter' })
     return
   }
 
   try {
-    // Forward relevant client headers so upstream servers don't reject us
+    // Forward client headers + real IP so upstream servers accept the request
+    const clientIp = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || '').split(',')[0].trim()
     const forwardHeaders = {}
     const passthrough = ['user-agent', 'accept', 'accept-language', 'range']
     for (const key of passthrough) {
@@ -26,6 +26,10 @@ export default async function handler(req, res) {
     }
     if (!forwardHeaders['user-agent']) {
       forwardHeaders['user-agent'] = 'IPTV-Proxy/1.0'
+    }
+    if (clientIp) {
+      forwardHeaders['X-Forwarded-For'] = clientIp
+      forwardHeaders['X-Real-IP'] = clientIp
     }
 
     const upstream = await fetch(targetUrl, {
