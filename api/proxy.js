@@ -17,14 +17,23 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Forward relevant client headers so upstream servers don't reject us
+    const forwardHeaders = {}
+    const passthrough = ['user-agent', 'accept', 'accept-language', 'range']
+    for (const key of passthrough) {
+      if (req.headers[key]) forwardHeaders[key] = req.headers[key]
+    }
+    if (!forwardHeaders['user-agent']) {
+      forwardHeaders['user-agent'] = 'IPTV-Proxy/1.0'
+    }
+
     const upstream = await fetch(targetUrl, {
-      headers: {
-        'User-Agent': req.headers['user-agent'] || 'IPTV-Proxy/1.0',
-      },
+      headers: forwardHeaders,
+      redirect: 'follow',
     })
 
+    console.log(`Proxy: ${upstream.status} ${targetUrl.substring(0, 120)}`)
     if (!upstream.ok) {
-      console.error(`Upstream ${upstream.status} for: ${targetUrl}`)
       res.status(upstream.status).end(`Upstream error: ${upstream.status}`)
       return
     }
