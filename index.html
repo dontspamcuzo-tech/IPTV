@@ -100,10 +100,20 @@
     <div id="modal">
       <h2>Load Playlist</h2>
       <div id="modal-tabs">
-        <button class="modal-tab active" data-tab="url">From URL</button>
+        <button class="modal-tab active" data-tab="xtream">Xtream Login</button>
+        <button class="modal-tab" data-tab="url">From URL</button>
         <button class="modal-tab" data-tab="file">From File</button>
       </div>
-      <div id="tab-url" class="tab-content active">
+      <div id="tab-xtream" class="tab-content active">
+        <input type="text" id="xtream-server" placeholder="Server URL (e.g. http://example.com)">
+        <input type="text" id="xtream-username" placeholder="Username">
+        <input type="password" id="xtream-password" placeholder="Password">
+        <label class="remember-label">
+          <input type="checkbox" id="xtream-remember" checked> Remember me
+        </label>
+        <button id="xtream-login-btn">Login</button>
+      </div>
+      <div id="tab-url" class="tab-content">
         <input type="text" id="playlist-url" placeholder="Enter M3U playlist URL...">
         <button id="load-url-btn">Load</button>
       </div>

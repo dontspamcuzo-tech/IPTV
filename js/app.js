@@ -30,11 +30,23 @@
     autoLoadPlaylist();
   }
 
-  // ── Auto-load default playlist from config ──
+  // ── Auto-load default playlist from config or saved credentials ──
   async function autoLoadPlaylist() {
-    if (typeof IPTV_CONFIG === 'undefined' || !IPTV_CONFIG.autoLoad) return;
+    let server, username, password, format, output;
 
-    const { server, username, password, format, output } = IPTV_CONFIG;
+    if (typeof IPTV_CONFIG !== 'undefined' && IPTV_CONFIG.autoLoad) {
+      ({ server, username, password, format, output } = IPTV_CONFIG);
+    } else {
+      try {
+        const saved = JSON.parse(localStorage.getItem('iptv_xtream'));
+        if (saved && saved.server && saved.username && saved.password) {
+          ({ server, username, password } = saved);
+        } else {
+          return;
+        }
+      } catch (e) { return; }
+    }
+
     const url = `${server}/get.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&type=${format || 'm3u_plus'}&output=${output || 'ts'}`;
 
     $('player-overlay').querySelector('p').textContent = 'Loading playlist...';
@@ -76,6 +88,13 @@
         document.getElementById(`tab-${target}`).classList.add('active');
       });
     });
+
+    // Xtream login
+    $('xtream-login-btn').addEventListener('click', loadFromXtream);
+    $('xtream-password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadFromXtream();
+    });
+    restoreXtreamCredentials();
 
     // Load from URL
     $('load-url-btn').addEventListener('click', loadFromURL);
@@ -155,6 +174,54 @@
 
   function closeModal() {
     $('modal-overlay').classList.add('hidden');
+  }
+
+  // ── Xtream Codes login ──
+  function restoreXtreamCredentials() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('iptv_xtream'));
+      if (saved) {
+        $('xtream-server').value = saved.server || '';
+        $('xtream-username').value = saved.username || '';
+        $('xtream-password').value = saved.password || '';
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  async function loadFromXtream() {
+    const server = $('xtream-server').value.trim().replace(/\/+$/, '');
+    const username = $('xtream-username').value.trim();
+    const password = $('xtream-password').value.trim();
+
+    if (!server || !username || !password) {
+      showToast('Please fill in all fields', 'error');
+      return;
+    }
+
+    if ($('xtream-remember').checked) {
+      localStorage.setItem('iptv_xtream', JSON.stringify({ server, username, password }));
+    } else {
+      localStorage.removeItem('iptv_xtream');
+    }
+
+    const url = `${server}/get.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&type=m3u_plus&output=ts`;
+
+    $('xtream-login-btn').innerHTML = '<span class="loading"></span>';
+    $('xtream-login-btn').disabled = true;
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      processPlaylist(text);
+      closeModal();
+      showToast('Logged in successfully', 'success');
+    } catch (err) {
+      showToast(`Login failed: ${err.message}`, 'error');
+    } finally {
+      $('xtream-login-btn').textContent = 'Login';
+      $('xtream-login-btn').disabled = false;
+    }
   }
 
   // ── Load playlist ──
