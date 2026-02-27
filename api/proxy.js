@@ -32,8 +32,11 @@ export default async function handler(req, res) {
       redirect: 'follow',
     })
 
-    console.log(`Proxy: ${upstream.status} ${targetUrl.substring(0, 120)}`)
     if (!upstream.ok) {
+      const errBody = await upstream.text().catch(() => '')
+      console.error(`Upstream ${upstream.status} for: ${targetUrl}`)
+      console.error(`Response body: ${errBody.substring(0, 500)}`)
+      console.error(`Response headers: ${JSON.stringify(Object.fromEntries(upstream.headers))}`)
       res.status(upstream.status).end(`Upstream error: ${upstream.status}`)
       return
     }
