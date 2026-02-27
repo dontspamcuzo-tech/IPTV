@@ -96,6 +96,15 @@
     });
     restoreXtreamCredentials();
 
+    // Toggle password visibility
+    $('toggle-password').addEventListener('click', () => {
+      const pw = $('xtream-password');
+      const isHidden = pw.type === 'password';
+      pw.type = isHidden ? 'text' : 'password';
+      $('eye-icon').style.display = isHidden ? 'none' : '';
+      $('eye-off-icon').style.display = isHidden ? '' : 'none';
+    });
+
     // Load from URL
     $('load-url-btn').addEventListener('click', loadFromURL);
     $('playlist-url').addEventListener('keydown', (e) => {

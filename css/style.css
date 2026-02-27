@@ -447,28 +447,80 @@ body {
 #tab-xtream {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 #tab-xtream.active {
   display: flex;
 }
 
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field > label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 #tab-xtream input[type="text"],
 #tab-xtream input[type="password"] {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
+  transition: border-color 0.15s;
 }
 
 #tab-xtream input[type="text"]:focus,
 #tab-xtream input[type="password"]:focus {
   border-color: var(--accent);
+}
+
+#tab-xtream input[type="text"]::placeholder,
+#tab-xtream input[type="password"]::placeholder {
+  color: var(--text-muted);
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 44px !important;
+}
+
+#toggle-password {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+#toggle-password:hover {
+  color: var(--text-primary);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
 }
 
 .remember-label {
@@ -482,15 +534,18 @@ body {
 
 .remember-label input[type="checkbox"] {
   accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
 }
 
 #xtream-login-btn {
-  padding: 10px;
+  padding: 12px;
   background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
 }
