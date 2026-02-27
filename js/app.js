@@ -8,6 +8,14 @@
 
   const $ = (sel) => document.getElementById(sel);
 
+  // ── Proxy helper for mixed-content (HTTPS page → HTTP server) ──
+  function proxyFetch(url) {
+    if (location.protocol === 'https:' && url.startsWith('http://')) {
+      return fetch('https://corsproxy.io/?' + encodeURIComponent(url));
+    }
+    return fetch(url);
+  }
+
   // ── Toast ──
   window.showToast = function (msg, type = 'info') {
     let toast = $('toast');
@@ -53,7 +61,7 @@
     $('overlay-load-btn').style.display = 'none';
 
     try {
-      const resp = await fetch(url);
+      const resp = await proxyFetch(url);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const text = await resp.text();
       processPlaylist(text);
@@ -219,7 +227,7 @@
     $('xtream-login-btn').disabled = true;
 
     try {
-      const resp = await fetch(url);
+      const resp = await proxyFetch(url);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const text = await resp.text();
       processPlaylist(text);
@@ -245,7 +253,7 @@
     $('load-url-btn').disabled = true;
 
     try {
-      const resp = await fetch(url);
+      const resp = await proxyFetch(url);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const text = await resp.text();
       processPlaylist(text);
