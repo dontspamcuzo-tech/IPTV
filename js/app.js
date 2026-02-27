@@ -32,42 +32,9 @@
 
   // ── Init ──
   function init() {
-    Player.init();
-    Cast.init();
-    bindEvents();
-    autoLoadPlaylist();
-  }
-
-  // ── Auto-load default playlist from config or saved credentials ──
-  async function autoLoadPlaylist() {
-    let server, username, password
-
-    try {
-      const saved = JSON.parse(localStorage.getItem('iptv_xtream'))
-      if (saved && saved.server && saved.username && saved.password) {
-        ({ server, username, password } = saved)
-      } else {
-        return
-      }
-    } catch (e) { return }
-
-    const url = `${server}/get.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&type=m3u_plus&output=ts`
-
-    $('player-overlay').querySelector('p').textContent = 'Loading playlist...';
-    $('overlay-load-btn').style.display = 'none';
-
-    try {
-      const resp = await proxyFetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const text = await resp.text();
-      processPlaylist(text);
-      $('player-overlay').querySelector('p').textContent = 'Select a channel to start watching';
-      showToast('Playlist loaded successfully', 'success');
-    } catch (err) {
-      $('player-overlay').querySelector('p').textContent = 'Load a playlist to get started';
-      $('overlay-load-btn').style.display = '';
-      showToast(`Auto-load failed: ${err.message}`, 'error');
-    }
+    Player.init()
+    Cast.init()
+    bindEvents()
   }
 
   // ── Events ──
