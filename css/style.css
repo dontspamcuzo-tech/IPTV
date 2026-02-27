@@ -444,14 +444,10 @@ body {
   display: block;
 }
 
-#tab-xtream {
+#tab-xtream.active {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-#tab-xtream.active {
-  display: flex;
 }
 
 .form-field {
@@ -554,14 +550,10 @@ body {
   background: var(--accent-hover);
 }
 
-#tab-url {
+#tab-url.active {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-#tab-url.active {
-  display: flex;
 }
 
 #playlist-url {
