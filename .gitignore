@@ -1,4 +1,5 @@
 config.js
+.vercel
 .DS_Store
 Thumbs.db
 *.swp
@@ -7,3 +8,4 @@ Thumbs.db
 .idea/
 .vscode/
 node_modules/
+.env*.local

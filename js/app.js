@@ -11,9 +11,9 @@
   // ── Proxy helper for mixed-content (HTTPS page → HTTP server) ──
   function proxyFetch(url) {
     if (location.protocol === 'https:' && url.startsWith('http://')) {
-      return fetch('https://corsproxy.io/?' + encodeURIComponent(url));
+      return fetch('/api/proxy?url=' + encodeURIComponent(url))
     }
-    return fetch(url);
+    return fetch(url)
   }
 
   // ── Toast ──
@@ -40,22 +40,18 @@
 
   // ── Auto-load default playlist from config or saved credentials ──
   async function autoLoadPlaylist() {
-    let server, username, password, format, output;
+    let server, username, password
 
-    if (typeof IPTV_CONFIG !== 'undefined' && IPTV_CONFIG.autoLoad) {
-      ({ server, username, password, format, output } = IPTV_CONFIG);
-    } else {
-      try {
-        const saved = JSON.parse(localStorage.getItem('iptv_xtream'));
-        if (saved && saved.server && saved.username && saved.password) {
-          ({ server, username, password } = saved);
-        } else {
-          return;
-        }
-      } catch (e) { return; }
-    }
+    try {
+      const saved = JSON.parse(localStorage.getItem('iptv_xtream'))
+      if (saved && saved.server && saved.username && saved.password) {
+        ({ server, username, password } = saved)
+      } else {
+        return
+      }
+    } catch (e) { return }
 
-    const url = `${server}/get.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&type=${format || 'm3u_plus'}&output=${output || 'ts'}`;
+    const url = `${server}/get.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&type=m3u_plus&output=ts`
 
     $('player-overlay').querySelector('p').textContent = 'Loading playlist...';
     $('overlay-load-btn').style.display = 'none';

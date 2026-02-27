@@ -7,7 +7,17 @@ const Player = {
   _currentChannel: null,
 
   init() {
-    this._video = document.getElementById('video-player');
+    this._video = document.getElementById('video-player')
+  },
+
+  /**
+   * Wrap an HTTP URL through our server-side proxy when on HTTPS.
+   */
+  _proxyUrl(url) {
+    if (location.protocol === 'https:' && url.startsWith('http://')) {
+      return '/api/proxy?url=' + encodeURIComponent(url)
+    }
+    return url
   },
 
   /**
@@ -27,56 +37,65 @@ const Player = {
     // Hide overlay
     document.getElementById('player-overlay').classList.remove('visible');
 
+    const proxiedUrl = this._proxyUrl(url)
+
     if (this._isHLS(url) && Hls.isSupported()) {
+      const self = this
       this._hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
         maxBufferLength: 60,
         maxMaxBufferLength: 120,
-        maxBufferSize: 120 * 1000 * 1000,  // 120MB buffer for 4K
-        capLevelToPlayerSize: false,        // Allow 4K even on smaller viewports
+        maxBufferSize: 120 * 1000 * 1000,
+        capLevelToPlayerSize: false,
         autoStartLoad: true,
-        startLevel: -1,                     // Auto-select highest quality
-      });
-      this._hls.loadSource(url);
-      this._hls.attachMedia(this._video);
+        startLevel: -1,
+        xhrSetup(xhr, xhrUrl) {
+          // Route all sub-requests (segments, sub-manifests) through proxy
+          const rewritten = self._proxyUrl(xhrUrl)
+          if (rewritten !== xhrUrl) {
+            xhr.open('GET', rewritten, true)
+          }
+        },
+      })
+      this._hls.loadSource(proxiedUrl)
+      this._hls.attachMedia(this._video)
       this._hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-        // Auto-select highest quality level (4K if available)
         if (data.levels && data.levels.length > 0) {
           const highest = data.levels.reduce((max, level, i) =>
-            (level.height > (data.levels[max]?.height || 0)) ? i : max, 0);
-          this._hls.currentLevel = highest;
+            (level.height > (data.levels[max]?.height || 0)) ? i : max, 0)
+          this._hls.currentLevel = highest
         }
-        this._video.play().catch(() => {});
-      });
+        this._video.play().catch(() => {})
+      })
       this._hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              showToast('Network error — retrying...', 'error');
-              this._hls.startLoad();
-              break;
+              showToast('Network error — retrying...', 'error')
+              this._hls.startLoad()
+              break
             case Hls.ErrorTypes.MEDIA_ERROR:
-              showToast('Media error — recovering...', 'error');
-              this._hls.recoverMediaError();
-              break;
+              showToast('Media error — recovering...', 'error')
+              this._hls.recoverMediaError()
+              break
             default:
-              showToast('Stream unavailable', 'error');
-              this._hls.destroy();
-              break;
+              showToast('Stream unavailable', 'error')
+              this._hls.destroy()
+              break
           }
         }
-      });
+      })
     } else if (this._video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS support (Safari)
-      this._video.src = url;
+      // Native HLS (Safari) — proxy rewrites M3U8 URLs server-side
+      this._video.src = proxiedUrl
       this._video.addEventListener('loadedmetadata', () => {
-        this._video.play().catch(() => {});
-      }, { once: true });
+        this._video.play().catch(() => {})
+      }, { once: true })
     } else {
       // Direct URL (MP4, etc.)
-      this._video.src = url;
-      this._video.play().catch(() => {});
+      this._video.src = proxiedUrl
+      this._video.play().catch(() => {})
     }
 
     // Update now-playing
