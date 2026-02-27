@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     })
 
     if (!upstream.ok) {
+      console.error(`Upstream ${upstream.status} for: ${targetUrl}`)
       res.status(upstream.status).end(`Upstream error: ${upstream.status}`)
       return
     }
