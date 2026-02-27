@@ -9,8 +9,14 @@
   const $ = (sel) => document.getElementById(sel);
 
   // ── Proxy helper for mixed-content (HTTPS page → HTTP server) ──
-  function proxyFetch(url) {
+  // Uses corsproxy.io first (works with IP-restricted IPTV servers),
+  // falls back to our Vercel proxy if that fails.
+  async function proxyFetch(url) {
     if (location.protocol === 'https:' && url.startsWith('http://')) {
+      try {
+        const resp = await fetch('https://corsproxy.io/?' + encodeURIComponent(url))
+        if (resp.ok) return resp
+      } catch (e) { /* corsproxy failed, try our proxy */ }
       return fetch('/api/proxy?url=' + encodeURIComponent(url))
     }
     return fetch(url)
